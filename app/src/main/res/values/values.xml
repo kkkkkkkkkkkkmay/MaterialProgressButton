@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="MaterialProgressButton">
+        <attr name="material_progress_button_text_size" format="dimension" />
+        <attr name="material_progress_button_text_color" format="color" />
+        <attr name="material_progress_button_text" format="string" />
+        <attr name="material_progress_button_is_show_progress" format="boolean" />
+    </declare-styleable>
+</resources>
