@@ -14,6 +14,8 @@ import android.widget.ProgressBar;
 
 import com.kot32.materialprogressbutton.R;
 
+import java.util.Timer;
+
 /**
  * Created by kot32 on 15/7/28.
  */
@@ -35,7 +37,7 @@ public class MaterialProgressButton extends ProgressBar {
     //初始的背景颜色
     private int sBackground;
     //波纹半径
-    private float rippleRadius = 0;
+    private float rippleRadius = -1;
     private float rippleBorder = 0;
 
     //起始点位置
@@ -47,6 +49,12 @@ public class MaterialProgressButton extends ProgressBar {
     private onProgressChanged IProgress;
     //当前进度(父类变量可能会造成BUG)
     private int currentProgress = 0;
+    //上一次设置Progress 的时间
+    private long lastSetProgressTime = System.currentTimeMillis();
+    //是否播放呼吸动画
+    private boolean isStartBreathAnimator = false;
+
+    private Timer timer;
 
     public MaterialProgressButton(Context context) {
         super(context);
@@ -82,13 +90,20 @@ public class MaterialProgressButton extends ProgressBar {
         mTextSize = (int) attributes.getDimension(
                 R.styleable.MaterialProgressButton_material_progress_button_text_size,
                 mTextSize);
+
         mText = attributes.getString(R.styleable.MaterialProgressButton_material_progress_button_text);
         isShowProgress = attributes.getBoolean(R.styleable.MaterialProgressButton_material_progress_button_is_show_progress, false);
         attributes.recycle();
     }
 
+    float breathRadius = 0;
+    boolean isStart = false;
+    float speed = 0;
+    boolean isX = true;
+
     @Override
     protected synchronized void onDraw(Canvas canvas) {
+
         //测量字体的宽度和高度
         float textWidth = mTextPaint.measureText(mText);
         float textHeight = (mTextPaint.descent() + mTextPaint.ascent()) / 2;
@@ -103,15 +118,43 @@ public class MaterialProgressButton extends ProgressBar {
             }
         }
 
-        //画圆,根据目前进度计算目前半径
         if (startPosition != null) {
-            rippleRadius = rippleBorder * ((currentProgress * 1.0f) / getMax());
-            canvas.drawCircle(startPosition.x, startPosition.y, rippleRadius, mRipplePaint);
-            if (rippleRadius >= rippleBorder) {
-                restButton();
-                IProgress.onFinish();
+            if (!isStart) {
+                //画圆,根据目前进度计算目前半径
+                rippleRadius = rippleBorder * ((currentProgress * 1.0f) / getMax());
+                canvas.drawCircle(startPosition.x, startPosition.y, rippleRadius, mRipplePaint);
+                speed = 0;
+            }
+            if (isStartBreathAnimator) {
+                //进入呼吸动画
+                canvas.drawCircle(startPosition.x, startPosition.y, breathRadius, mRipplePaint);
+                if (breathRadius >= (rippleRadius + 20)) {
+                    isX = false;
+                }
+                if (breathRadius <= (rippleRadius)) {
+                    isX = true;
+                }
+                if (isX) {
+                    //吸
+                    breathRadius += speed;
+                    speed += 0.03;
+                } else {
+                    //呼
+                    breathRadius -= speed;
+                    speed -= 0.03;
+                }
+
+                isStart = true;
+                postInvalidate();
             }
         }
+
+        if (rippleRadius >= rippleBorder) {
+            restButton();
+            IProgress.onFinish();
+        }
+
+
     }
 
     @Override
@@ -191,6 +234,9 @@ public class MaterialProgressButton extends ProgressBar {
             currentProgress = 0;
         }
         currentProgress = progress;
+        lastSetProgressTime = System.currentTimeMillis();
+        breathRadius = rippleRadius;
+        isStart = false;
         postInvalidate();
     }
 
@@ -216,6 +262,14 @@ public class MaterialProgressButton extends ProgressBar {
 
     public void setIsShowProgress(boolean isShowProgress) {
         this.isShowProgress = isShowProgress;
+    }
+
+    public boolean isStartBreathAnimator() {
+        return isStartBreathAnimator;
+    }
+
+    public void setIsStartBreathAnimator(boolean isStartBreathAnimator) {
+        this.isStartBreathAnimator = isStartBreathAnimator;
     }
 }
 
