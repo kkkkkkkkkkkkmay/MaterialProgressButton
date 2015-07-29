@@ -150,7 +150,10 @@ public class MaterialProgressButton extends ProgressBar {
         }
 
         if (rippleRadius >= rippleBorder) {
+            //重置状态
             restButton();
+            //快速涟漪
+
             IProgress.onFinish();
         }
 
