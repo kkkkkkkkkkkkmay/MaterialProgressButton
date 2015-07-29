@@ -22,7 +22,7 @@ public class MainActivity extends ActionBarActivity {
                     if (progress >= 100) {
                         return;
                     }
-                    if (progress == 30 || progress == 75 || progress == 90) {
+                    if (progress == 10 || progress == 50 || progress == 75) {
                         mHandler.sendEmptyMessageDelayed(1, 2000);
                     } else
                         mHandler.sendEmptyMessageDelayed(1, 5);
